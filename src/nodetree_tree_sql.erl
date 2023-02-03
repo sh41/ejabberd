@@ -293,28 +293,28 @@ delete_node(Host, Node) ->
 raw_to_node(Host, [Node, Parent, Type, Nidx]) ->
     raw_to_node(Host, {Node, Parent, Type, binary_to_integer(Nidx)});
 raw_to_node(Host, {Node, Parent, Type, Nidx}) ->
-    Options = case catch
-	ejabberd_sql:sql_query_t(
-	  ?SQL("select @(name)s, @(val)s from pubsub_node_option "
-	       "where nodeid=%(Nidx)d"))
-    of
-	{selected, ROptions} ->
-	    DbOpts = lists:map(fun ({Key, Value}) ->
-			    RKey = misc:binary_to_atom(Key),
-			    Tokens = element(2, erl_scan:string(binary_to_list(<<Value/binary, ".">>))),
-			    RValue = element(2, erl_parse:parse_term(Tokens)),
-			    {RKey, RValue}
-		    end,
-		    ROptions),
-	    Module = misc:binary_to_atom(<<"node_", Type/binary, "_sql">>),
-	    StdOpts = Module:options(),
-	    lists:foldl(fun ({Key, Value}, Acc) ->
-			lists:keystore(Key, 1, Acc, {Key, Value})
-		end,
-		StdOpts, DbOpts);
-	_ ->
-	    []
-    end,
+%% Static options to prevent multiple calls to db
+	Options = [
+		{sql, true},
+		{rsm, true},
+		{deliver_payloads, true},
+		{notify_config, false},
+		{notify_delete, false},
+		{notify_retract, true},
+		{purge_offline, false},
+		{persist_items, false},
+		{max_items, 10},
+		{subscribe, true},
+		{access_model, open},
+		{roster_groups_allowed, []},
+		{publish_model, publishers},
+		{notification_type, normal},
+		{max_payload_size, 250000},
+		{send_last_published_item, never},
+		{deliver_notifications, true},
+		{presence_based_delivery, false},
+		{itemreply, none}
+	],
     Parents = case Parent of
 	<<>> -> [];
 	_ -> [Parent]
