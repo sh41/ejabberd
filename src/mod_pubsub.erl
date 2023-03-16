@@ -4173,7 +4173,7 @@ mod_opt_type(pep_mapping) ->
     econf:map(econf:binary(), econf:binary());
 mod_opt_type(plugins) ->
     econf:list(
-      econf:enum([<<"flat">>, <<"pep">>]),
+      econf:enum([<<"flat">>, <<"flat_static_options">>, <<"pep">>]),
       [unique]);
 mod_opt_type(host) ->
     econf:host();
